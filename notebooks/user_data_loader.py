@@ -15,7 +15,7 @@ joints = tuple(['head', 'neck', 'torso',
                 'right_shoulder', 'right_elbow', 'right_hand',
                 'left_hip', 'left_knee', 'left_foot',
                 'right_hip', 'right_knee', 'right_foot'])
-attribs = tuple(['confidence', 'pos_x', 'pos_y', 'pos_z'
+attribs = tuple(['confidence', 'pos_x', 'pos_y', 'pos_z',
                  'orient_x', 'orient_y', 'orient_z', 'orient_w'])
 
 index = list(it.chain(header,
@@ -45,9 +45,9 @@ def make_multiindex(joints, attribs):
 
 def normalize_joints(df, from_joint):
     ''' Returns a normalized DataFrame. '''
-    return df[from_joint].copy(), \
-        df.drop(['header', 'pose', from_joint], axis=1, level='joint'). \
-        sub(df[from_joint], level=1)
+    return (df[from_joint].copy(),
+            df.drop(['header', 'pose', from_joint], axis=1, level='joint')
+            .sub(df[from_joint], level=1))
 
 
 def load_user_file(file_):
@@ -67,6 +67,11 @@ def load_user_file(file_):
 stand_cleaner = lambda x: x.lstrip('STAND_')
 
 
+def clean_stand_prefix(x):
+    '''Removes 'STAND_' prefix of a string'''
+    x.lstrip('STAND_')
+
+
 def prepare_df(df):
     ''' Groups by pose, removes Header and Confidences,
         calculates the mean for all instances of each group,
@@ -78,8 +83,9 @@ def prepare_df(df):
 def accumulate_indices(df_list):
     ''' Concatenates the indices of a list of pandas.Dataframes
         and returns them as an numpy.array '''
-    get_ind = lambda x: x.index
-    return np.concatenate(map(get_ind, df_list))
+    # get_ind = lambda x: x.index
+    # return np.concatenate(map(get_ind, df_list))
+    return np.concatenate([x.index() for x in df_list])
 
 
 def accumulate_users(users):
