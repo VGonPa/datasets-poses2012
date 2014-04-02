@@ -32,15 +32,29 @@ ind_pos_y = [i for i in index if '_pos_y' in i]
 ind_pos_z = [i for i in index if '_pos_z' in i]
 
 
-def make_multiindex(joints, attribs):
-    '''Returns all attribs in two iterables.
-       1st iterable is the 1st level of the index.
-       2nd iterable is the 2nd level of the index.'''
+def _prepare_multiindex(joints, attribs):
+    '''Helper function that returns all attribs in two iterables.
+       1st iterable will be used as the 1st level of the index.
+       2nd iterable will be used as the 2nd level of the index.'''
     all_columns = it.izip(*it.product(joints, attribs))
     first_level = \
         it.chain(['header'] * len(header), all_columns.next(), ['pose', ])
     second_level = it.chain(header, all_columns.next(), ['pose', ])
     return first_level, second_level
+
+
+def make_multiindex(joints, attribs):
+    ''' Returns a pandas.MultiIndex from the entered attributes
+        @param joints: first level of multiindex
+        @type joints: list of strings
+        @param joints: second level of multiindex
+        @type joints: list of strings
+        @return: the Multiindex itself
+        @rtype: pandas.MultiIndex
+    '''
+    multiind1, multiind2 = _prepare_multiindex(joints, attribs)
+    return pd.MultiIndex.from_arrays([list(multiind1), list(multiind2)],
+                                     names=['joint', 'attrib'])
 
 
 def normalize_joints(df, from_joint):
